@@ -1,0 +1,828 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Heart, 
+  Smile, 
+  Frown, 
+  Zap, 
+  Moon, 
+  AlertCircle, 
+  MessageSquare, 
+  BookOpen, 
+  Wind, 
+  Sparkles, 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  Plus, 
+  Trash2, 
+  Calendar, 
+  ShieldAlert, 
+  Send,
+  ChevronRight,
+  RefreshCw,
+  Sun,
+  Coffee
+} from 'lucide-react';
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('home');
+
+  // Affirmations
+  const affirmations = [
+    "Tus sentimientos son válidos y merecen ser escuchados.",
+    "Está bien tomarse un descanso. No tienes que hacerlo todo hoy.",
+    "Eres más fuerte de lo que crees y has superado momentos difíciles antes.",
+    "Respirar profundo es un acto de amor propio y paciencia.",
+    "Cada pequeño paso cuenta. Celebra tus progresos de hoy.",
+    "Te mereces la misma amabilidad y compasión que ofreces a los demás.",
+    "Tu paz mental es una prioridad, no un lujo."
+  ];
+  const [currentAffirmation, setCurrentAffirmation] = useState(affirmations[0]);
+
+  const getRandomAffirmation = () => {
+    const nextIdx = Math.floor(Math.random() * affirmations.length);
+    setCurrentAffirmation(affirmations[nextIdx]);
+  };
+
+  // Mood Tracker State
+  const moodsList = [
+    { id: 'happy', label: 'Feliz', emoji: '😊', color: 'bg-amber-100 text-amber-700 border-amber-300' },
+    { id: 'calm', label: 'Tranquilo/a', emoji: '😌', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+    { id: 'energetic', label: 'Con Energía', emoji: '⚡', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+    { id: 'anxious', label: 'Ansioso/a', emoji: '😰', color: 'bg-purple-100 text-purple-700 border-purple-300' },
+    { id: 'sad', label: 'Triste', emoji: '😢', color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
+    { id: 'stressed', label: 'Estresado/a', emoji: '😫', color: 'bg-rose-100 text-rose-700 border-rose-300' },
+  ];
+
+  const [moodLogs, setMoodLogs] = useState([
+    { id: 1, mood: 'Tranquilo/a', emoji: '😌', note: 'Un paseo corto por la mañana', date: 'Hoy, 09:30 AM' },
+    { id: 2, mood: 'Con Energía', emoji: '⚡', note: 'Terminé una tarea importante', date: 'Ayer, 04:15 PM' }
+  ]);
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [moodNote, setMoodNote] = useState('');
+
+  const handleSaveMood = () => {
+    if (!selectedMood) return;
+    const newLog = {
+      id: Date.now(),
+      mood: selectedMood.label,
+      emoji: selectedMood.emoji,
+      note: moodNote || 'Sin notas adicionales',
+      date: `Hoy, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    };
+    setMoodLogs([newLog, ...moodLogs]);
+    setSelectedMood(null);
+    setMoodNote('');
+  };
+
+  // Breathing Timer State
+  const [breathingTechnique, setBreathingTechnique] = useState('478'); // '478' or 'box'
+  const [isBreathingActive, setIsBreathingActive] = useState(false);
+  const [breathPhase, setBreathPhase] = useState('Inhala'); // Inhala, Mantén, Exhala, Pausa
+  const [phaseTimer, setPhaseTimer] = useState(4);
+  const [circleScale, setCircleScale] = useState(1);
+
+  useEffect(() => {
+    let interval = null;
+    if (isBreathingActive) {
+      interval = setInterval(() => {
+        setPhaseTimer((prev) => {
+          if (prev > 1) return prev - 1;
+
+          // Switch phases when timer hits 0
+          if (breathingTechnique === '478') {
+            if (breathPhase === 'Inhala') {
+              setBreathPhase('Mantén');
+              setCircleScale(1.4);
+              return 7;
+            } else if (breathPhase === 'Mantén') {
+              setBreathPhase('Exhala');
+              setCircleScale(0.8);
+              return 8;
+            } else {
+              setBreathPhase('Inhala');
+              setCircleScale(1.2);
+              return 4;
+            }
+          } else {
+            // Box Breathing: 4-4-4-4
+            if (breathPhase === 'Inhala') {
+              setBreathPhase('Mantén');
+              setCircleScale(1.3);
+              return 4;
+            } else if (breathPhase === 'Mantén') {
+              setBreathPhase('Exhala');
+              setCircleScale(0.8);
+              return 4;
+            } else if (breathPhase === 'Exhala') {
+              setBreathPhase('Pausa');
+              setCircleScale(0.8);
+              return 4;
+            } else {
+              setBreathPhase('Inhala');
+              setCircleScale(1.3);
+              return 4;
+            }
+          }
+        });
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isBreathingActive, breathPhase, breathingTechnique]);
+
+  const toggleBreathing = () => {
+    if (!isBreathingActive) {
+      setIsBreathingActive(true);
+      setBreathPhase('Inhala');
+      setPhaseTimer(4);
+      setCircleScale(1.3);
+    } else {
+      setIsBreathingActive(false);
+      setBreathPhase('Listos');
+      setPhaseTimer(4);
+      setCircleScale(1);
+    }
+  };
+
+  const resetBreathing = () => {
+    setIsBreathingActive(false);
+    setBreathPhase('Listos');
+    setPhaseTimer(4);
+    setCircleScale(1);
+  };
+
+  // Gratitude Journal
+  const [gratitudeEntries, setGratitudeEntries] = useState([
+    {
+      id: 1,
+      items: ['Un café caliente por la mañana', 'Hablar con mi mejor amigo/a', 'El sol brillando en mi ventana'],
+      date: 'Ayer'
+    }
+  ]);
+  const [item1, setItem1] = useState('');
+  const [item2, setItem2] = useState('');
+  const [item3, setItem3] = useState('');
+
+  const handleSaveGratitude = (e) => {
+    e.preventDefault();
+    if (!item1.trim() && !item2.trim() && !item3.trim()) return;
+    const newEntry = {
+      id: Date.now(),
+      items: [item1, item2, item3].filter(i => i.trim() !== ''),
+      date: `Hoy, ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`
+    };
+    setGratitudeEntries([newEntry, ...gratitudeEntries]);
+    setItem1('');
+    setItem2('');
+    setItem3('');
+  };
+
+  // Chatbot State
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      sender: 'bot',
+      text: '¡Hola! Soy tu espacio seguro de desahogo. Estoy aquí para escucharte sin juzgarte. ¿Cómo te sientes en este momento o qué hay en tu mente?'
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMsg = { id: Date.now(), sender: 'user', text: chatInput };
+    setMessages((prev) => [...prev, userMsg]);
+    const userText = chatInput.toLowerCase();
+    setChatInput('');
+
+    // Empathic response generation
+    setTimeout(() => {
+      let botResponse = "Te escucho atentamente. Es completamente válido sentirse así. Recuerda tomarte las cosas con calma y darte un momento para respirar.";
+
+      if (userText.includes('triste') || userText.includes('llorar') || userText.includes('mal')) {
+        botResponse = "Siento mucho que estés pasando por esto. La tristeza es una emoción natural y está bien expresarla. ¿Deseas contarme más sobre lo que la causó o prefieres hacer una pausa?";
+      } else if (userText.includes('ansia') || userText.includes('estres') || userText.includes('asustad') || userText.includes('preocupad')) {
+        botResponse = "Entiendo que sientas esa presión en el pecho o mente agitada. Todo va a estar bien. Prueba ir a nuestra pestaña de Respiración o usa el Botón de Calma si sientes que la ansiedad aumenta.";
+      } else if (userText.includes('gracias') || userText.includes('bien') || userText.includes('mejor')) {
+        botResponse = "Me alegra muchísimo saber eso. Recuerda que siempre que necesites un refugio, este espacio está disponible para ti.";
+      } else if (userText.includes('cansad') || userText.includes('agotad')) {
+        botResponse = "El cansancio no solo es físico, también mental. Has estado haciendo tu mejor esfuerzo. Date permiso de descansar sin culpas hoy.";
+      }
+
+      setMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'bot', text: botResponse }]);
+    }, 1000);
+  };
+
+  // Emergency Modal (Grounding 5-4-3-2-1)
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [groundingStep, setGroundingStep] = useState(0);
+
+  const groundingSteps = [
+    { title: "5 Cosas que puedas VER", desc: "Mira a tu alrededor y nombra en tu mente 5 objetos cerca de ti (ej. un libro, una ventana, tus zapatos).", icon: "👀" },
+    { title: "4 Cosas que puedas TOCAR", desc: "Siente la textura de tu ropa, la firmeza del suelo bajo tus pies o la temperatura de tus manos.", icon: "✋" },
+    { title: "3 Sonidos que puedas ESCUCHAR", desc: "Presta atención al ambiente: el sonido del viento, el zumbido de un aparato o el tráfico lejano.", icon: "👂" },
+    { title: "2 Olores que puedas PERCIBIR", desc: "Inhala suavemente. Intenta notar el olor de la habitación, tu perfume o una bebida cercana.", icon: "👃" },
+    { title: "1 Sabor que puedas PROBAR", desc: "Nota el sabor en tu boca, toma un sorbo de agua o intenta saborear algo mentolado.", icon: "👅" }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50/30 to-purple-50/40 text-slate-800 flex flex-col font-sans">
+      
+      {/* Top Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-teal-100/60 sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-400 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-teal-200">
+              <Heart className="w-5 h-5 fill-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-teal-700 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Tu Coach
+              </h1>
+              <p className="text-xs text-slate-500 font-medium">Tu espacio seguro de apoyo emocional</p>
+            </div>
+          </div>
+
+          {/* Quick SOS Button */}
+          <button
+            onClick={() => { setShowEmergencyModal(true); setGroundingStep(0); }}
+            className="flex items-center space-x-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow active:scale-95"
+          >
+            <ShieldAlert className="w-4 h-4 text-rose-500 animate-pulse" />
+            <span>Botón de Calma SOS</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
+        
+        {/* Welcome Banner */}
+        <section className="bg-gradient-to-r from-teal-500/10 via-indigo-500/10 to-purple-500/10 border border-teal-100/80 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-sm">
+          <div className="relative z-10 max-w-2xl">
+            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-teal-700 border border-teal-200/50 mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-teal-500" />
+              <span>Bienvenido/a a tu refugio diario</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">
+              Hola, ¿cómo se siente tu corazón hoy?
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              Tómate un momento para desconectar del ruido exterior. Este es tu rincón personal para validar emociones, ejercitar la calma y reconectar contigo.
+            </p>
+          </div>
+          <div className="absolute -right-6 -bottom-10 opacity-20 pointer-events-none">
+            <Heart className="w-64 h-64 text-indigo-400" />
+          </div>
+        </section>
+
+        {/* Affirmation Card */}
+        <section className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm relative hover:shadow-md transition-shadow">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start space-x-3">
+              <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl mt-0.5">
+                <Sun className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-purple-600">Afirmación del Día</span>
+                <p className="text-slate-700 font-medium italic text-base sm:text-lg mt-0.5">
+                  "{currentAffirmation}"
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={getRandomAffirmation}
+              className="flex items-center space-x-1.5 text-xs font-medium text-slate-500 hover:text-purple-600 bg-slate-50 hover:bg-purple-50 px-3 py-2 rounded-lg transition-colors border border-slate-200 hover:border-purple-200 self-end sm:self-center shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Otra frase</span>
+            </button>
+          </div>
+        </section>
+
+        {/* Navigation Tabs */}
+        <nav className="flex items-center space-x-1 sm:space-x-2 bg-slate-200/60 p-1.5 rounded-2xl overflow-x-auto scrollbar-none">
+          {[
+            { id: 'home', label: 'Inicio', icon: Heart },
+            { id: 'mood', label: 'Ánimo', icon: Smile },
+            { id: 'breathing', label: 'Respiración', icon: Wind },
+            { id: 'gratitude', label: 'Diario', icon: BookOpen },
+            { id: 'chat', label: 'Desahogo Bot', icon: MessageSquare }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all whitespace-nowrap flex-1 justify-center cursor-pointer ${
+                  active
+                    ? 'bg-white text-slate-800 shadow-sm font-semibold scale-[1.02]'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${active ? 'text-teal-600' : 'text-slate-400'}`} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* TAB CONTENTS */}
+
+        {/* 1. HOME / OVERVIEW TAB */}
+        {activeTab === 'home' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Quick Mood Box */}
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                    <Smile className="w-5 h-5 text-teal-500" />
+                    ¿Cómo estás ahora?
+                  </h3>
+                  <button 
+                    onClick={() => setActiveTab('mood')} 
+                    className="text-xs text-teal-600 font-semibold hover:underline"
+                  >
+                    Ver historial
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {moodsList.slice(0, 6).map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => { setSelectedMood(m); setActiveTab('mood'); }}
+                      className={`p-3 rounded-2xl border text-center transition-transform hover:scale-105 ${m.color}`}
+                    >
+                      <div className="text-2xl mb-1">{m.emoji}</div>
+                      <div className="text-xs font-semibold">{m.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 text-center">Toca una opción para registraria en tu diario emocional</p>
+            </div>
+
+            {/* Quick Breathing Exercise Shortcut */}
+            <div className="bg-gradient-to-br from-teal-500 to-emerald-600 text-white rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+              <div className="relative z-10">
+                <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold">
+                  Pausa Activa
+                </span>
+                <h3 className="text-xl font-bold mt-3 mb-2">Respiración 4-7-8</h3>
+                <p className="text-teal-50 text-sm leading-relaxed mb-4">
+                  Disminuye el ritmo cardíaco y calma el sistema nervioso en menos de 2 minutos.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab('breathing')}
+                className="relative z-10 w-full bg-white text-teal-700 hover:bg-teal-50 font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm"
+              >
+                <Wind className="w-4 h-4 text-teal-600" />
+                <span>Iniciar Ejercicio Guiado</span>
+              </button>
+              <div className="absolute -right-8 -bottom-8 opacity-10 pointer-events-none">
+                <Wind className="w-48 h-48 text-white" />
+              </div>
+            </div>
+
+            {/* Chatbot Shortcut */}
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800">¿Necesitas desahogarte?</h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Nuestro compañero de escucha libre de juicios está listo para leerte siempre que lo necesites.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTab('chat')}
+                className="mt-4 w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors border border-indigo-100 text-sm"
+              >
+                <span>Escribir ahora</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Gratitude Shortcut */}
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+                  <Coffee className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800">Diario de Gratitud</h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Escribir 3 cosas buenas al día entrena la mente para enfocarse en la calma y lo positivo.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTab('gratitude')}
+                className="mt-4 w-full bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors border border-amber-100 text-sm"
+              >
+                <span>Ver o Escribir Diario</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+          </div>
+        )}
+
+        {/* 2. MOOD TRACKER TAB */}
+        {activeTab === 'mood' && (
+          <div className="space-y-6">
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-800 mb-1">Registro de Estado de Ánimo</h3>
+              <p className="text-xs text-slate-500 mb-4">¿Cómo describirías tu estado emocional en este momento?</p>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-5">
+                {moodsList.map((m) => {
+                  const isSelected = selectedMood?.id === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => setSelectedMood(m)}
+                      className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center ${
+                        m.color
+                      } ${isSelected ? 'ring-2 ring-teal-500 ring-offset-2 scale-105 shadow-md' : 'opacity-80 hover:opacity-100'}`}
+                    >
+                      <span className="text-3xl mb-1">{m.emoji}</span>
+                      <span className="text-xs font-bold">{m.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedMood && (
+                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 animate-fadeIn">
+                  <label className="text-xs font-semibold text-slate-600 block">
+                    ¿Quieres añadir alguna nota o pensamiento? (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={moodNote}
+                    onChange={(e) => setMoodNote(e.target.value)}
+                    placeholder="Ej. Me sentí un poco desbordado/a en el trabajo..."
+                    className="w-full text-sm bg-white border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => setSelectedMood(null)}
+                      className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSaveMood}
+                      className="px-5 py-2 text-xs font-semibold bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700 transition-colors"
+                    >
+                      Guardar Estado
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* History */}
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+              <h3 className="text-md font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-slate-400" />
+                Historial Reciente
+              </h3>
+              
+              {moodLogs.length === 0 ? (
+                <p className="text-xs text-slate-400 italic text-center py-6">Aún no has registrado estados de ánimo hoy.</p>
+              ) : (
+                <div className="space-y-3">
+                  {moodLogs.map((log) => (
+                    <div key={log.id} className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">{log.emoji}</span>
+                        <div>
+                          <div className="text-sm font-semibold text-slate-700">{log.mood}</div>
+                          <div className="text-xs text-slate-500">{log.note}</div>
+                        </div>
+                      </div>
+                      <span className="text-xs font-medium text-slate-400">{log.date}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 3. BREATHING EXERCISE TAB */}
+        {activeTab === 'breathing' && (
+          <div className="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-sm text-center flex flex-col items-center">
+            <h3 className="text-xl font-bold text-slate-800 mb-2">Respiración Guiada</h3>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-md mb-6">
+              Sigue el ritmo del círculo visual para regular tu ritmo cardíaco y liberar tensión.
+            </p>
+
+            {/* Selector Technique */}
+            <div className="inline-flex bg-slate-100 p-1 rounded-2xl mb-8 border border-slate-200">
+              <button
+                onClick={() => { setBreathingTechnique('478'); resetBreathing(); }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  breathingTechnique === '478' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Técnica 4-7-8 (Relajante)
+              </button>
+              <button
+                onClick={() => { setBreathingTechnique('box'); resetBreathing(); }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  breathingTechnique === 'box' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Respiración Cuadrada 4-4-4-4
+              </button>
+            </div>
+
+            {/* Breathing Visual Circle Container */}
+            <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-4">
+              {/* Outer pulsing shadow ring */}
+              <div
+                className="absolute inset-0 rounded-full bg-teal-100/50 transition-transform duration-1000 ease-in-out"
+                style={{ transform: `scale(${circleScale * 1.15})` }}
+              />
+              
+              {/* Main Breathing Circle */}
+              <div
+                className="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-gradient-to-tr from-teal-400 to-indigo-400 text-white flex flex-col items-center justify-center shadow-lg transition-transform duration-1000 ease-in-out z-10"
+                style={{ transform: `scale(${circleScale})` }}
+              >
+                <span className="text-2xl sm:text-3xl font-extrabold uppercase tracking-wider">
+                  {breathPhase}
+                </span>
+                {isBreathingActive && (
+                  <span className="text-4xl font-bold mt-1 animate-pulse">
+                    {phaseTimer}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center space-x-4 mt-6">
+              <button
+                onClick={toggleBreathing}
+                className="flex items-center space-x-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-all active:scale-95"
+              >
+                {isBreathingActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                <span>{isBreathingActive ? 'Pausar' : 'Iniciar'}</span>
+              </button>
+              <button
+                onClick={resetBreathing}
+                className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl transition-colors border border-slate-200"
+                title="Reiniciar"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 mt-6 max-w-xs">
+              {breathingTechnique === '478' 
+                ? 'Inhala en 4s, mantén en 7s y exhala suavemente en 8s.' 
+                : 'Inhala en 4s, mantén en 4s, exhala en 4s y haz pausa en 4s.'}
+            </p>
+          </div>
+        )}
+
+        {/* 4. GRATITUDE JOURNAL TAB */}
+        {activeTab === 'gratitude' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Input Form */}
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-800 mb-1">Diario de Gratitud</h3>
+              <p className="text-xs text-slate-500 mb-5">
+                Menciona 3 cosas simples o valiosas por las que te sientes agradecido/a el día de hoy:
+              </p>
+
+              <form onSubmit={handleSaveGratitude} className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center shrink-0">1</span>
+                  <input
+                    type="text"
+                    required
+                    value={item1}
+                    onChange={(e) => setItem1(e.target.value)}
+                    placeholder="Ej. El abrazo de mi ser querido"
+                    className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center shrink-0">2</span>
+                  <input
+                    type="text"
+                    value={item2}
+                    onChange={(e) => setItem2(e.target.value)}
+                    placeholder="Ej. Descansar un momento por la tarde"
+                    className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center shrink-0">3</span>
+                  <input
+                    type="text"
+                    value={item3}
+                    onChange={(e) => setItem3(e.target.value)}
+                    placeholder="Ej. Tener comida deliciosa"
+                    className="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full mt-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-colors text-sm"
+                >
+                  Guardar Reflexión de Hoy
+                </button>
+              </form>
+            </div>
+
+            {/* Past Entries */}
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col">
+              <h3 className="text-md font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-amber-500" />
+                Reflexiones Pasadas
+              </h3>
+
+              <div className="flex-1 overflow-y-auto space-y-4 pr-1 max-h-[380px]">
+                {gratitudeEntries.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic text-center py-8">Aún no tienes entradas registradas.</p>
+                ) : (
+                  gratitudeEntries.map((entry) => (
+                    <div key={entry.id} className="bg-amber-50/40 border border-amber-100 p-4 rounded-2xl">
+                      <span className="text-xs font-semibold text-amber-700 block mb-2">{entry.date}</span>
+                      <ul className="space-y-1.5">
+                        {entry.items.map((item, idx) => (
+                          <li key={idx} className="text-xs text-slate-700 flex items-start space-x-2">
+                            <span className="text-amber-500 font-bold">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* 5. EMOTIONAL SUPPORT CHATBOT */}
+        {activeTab === 'chat' && (
+          <div className="bg-white border border-slate-100 rounded-3xl shadow-sm flex flex-col h-[520px] overflow-hidden">
+            {/* Chat Header */}
+            <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center space-x-3">
+              <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                🤖
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Coach Emocional</h3>
+                <p className="text-xs text-emerald-600 flex items-center gap-1 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                  Espacio seguro y empático
+                </p>
+              </div>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/30">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-indigo-600 text-white rounded-br-none shadow-sm'
+                        : 'bg-white border border-slate-100 text-slate-700 rounded-bl-none shadow-sm'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Input Box */}
+            <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Escribe lo que sientes o piensas aquí..."
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              <button
+                type="submit"
+                className="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        )}
+
+      </main>
+
+      {/* EMERGENCY GROUNDING MODAL (SOS) */}
+      {showEmergencyModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-rose-100 relative animate-scaleUp">
+            
+            <button
+              onClick={() => setShowEmergencyModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-2.5 bg-rose-100 text-rose-600 rounded-2xl">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Técnica de Anclaje (Grounding)</h3>
+                <p className="text-xs text-slate-500">Recupera la calma paso a paso reconectando con tus sentidos</p>
+              </div>
+            </div>
+
+            {/* Current Step Card */}
+            <div className="bg-rose-50/50 border border-rose-100 p-6 rounded-2xl my-4 text-center">
+              <div className="text-5xl mb-3">{groundingSteps[groundingStep].icon}</div>
+              <h4 className="text-md font-bold text-rose-900 mb-1">
+                {groundingSteps[groundingStep].title}
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {groundingSteps[groundingStep].desc}
+              </p>
+            </div>
+
+            {/* Progress Dots */}
+            <div className="flex justify-center space-x-2 my-4">
+              {groundingSteps.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    idx === groundingStep ? 'bg-rose-500 w-6' : 'bg-slate-200'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Modal Controls */}
+            <div className="flex justify-between items-center mt-6">
+              <button
+                disabled={groundingStep === 0}
+                onClick={() => setGroundingStep((prev) => prev - 1)}
+                className="px-4 py-2 text-xs font-semibold text-slate-500 disabled:opacity-30 hover:text-slate-800"
+              >
+                Anterior
+              </button>
+
+              {groundingStep < groundingSteps.length - 1 ? (
+                <button
+                  onClick={() => setGroundingStep((prev) => prev + 1)}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-colors"
+                >
+                  Siguiente paso
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowEmergencyModal(false)}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-colors"
+                >
+                  ¡Me siento mejor!
+                </button>
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="mt-auto border-t border-slate-200/60 bg-white/50 py-4 text-center text-xs text-slate-400">
+        <p>Tu Coach • Tu bienestar es importante. Si estás en crisis, acude a profesionales o líneas de emergencia de tu localidad.</p>
+      </footer>
+
+    </div>
+  );
+}
